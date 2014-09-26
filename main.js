@@ -3,92 +3,168 @@ var context = canvas.getContext("2d");
 
 // Haltestellen in Y Achse
 // Name der Haltestelle, Entfernung vom Startpunkt in m
-[
-	["Haltestelle", 0],
-	["Haltestelle", 54],
-	["Haltestelle", 121],
-	["Haltestelle", 134]
-]
+
+var stops = [{
+		"name": "piazza domenicani - Domenikanerplatz",
+		"arrivaltime": null,
+		"departuretime": {
+				"hour": 17,
+				"min": 0
+		},
+		"diff": "0",
+		"abs": "0"
+},
+{
+		"name": "EURAC",
+		"arrivaltime": {
+				"hour": 17,
+				"min": 2
+		},
+		"departuretime": {
+				"hour": 17,
+				"min": 2
+		},
+		"diff": "1000",
+		"abs": "1000"
+},
+{
+		"name": "TIS",
+		"arrivaltime": {
+				"hour": 17,
+				"min": 9
+		},
+		"departuretime": {
+				"hour": 17,
+				"min": 9
+		},
+		"diff": "2500",
+		"abs": "3500"
+}];
 
 // Liste von Punkten des Diagramms
-// Timestamp in s, Entfernung vom Startpunkt in m
-[
-	[0,13],
-	[2,22],
-	[4,31],
-	[6,44],
-	[8,52],
-	[10,68],
-	[12,73]
+// Timestamp, Entfernung vom Startpunkt in m
+var points = [
+	[[14,26,00],13],
+	[[14,26,01],22],
+	[[14,26,03],31],
+	[[14,26,04],44],
+	[[14,26,05],52]
 ]
 
+/*
 // Constants
-var date;
+var w;
 var h;
-var m;
-var s;
-var dist60 = 8;
-var dist24 = 20;
-var dist12 = 40;
-var leftd = 40;
-var topd = 50;
-var rowd = 80;
-var len = 16;
-var thin = 2;
-var thick = 3;
-var important = "#000";
-var unimportant = "#bbb";
-var accent = "#fd3301";
+
+var length_mult;
+var time_mult;
+
+var time_extra_factor;
+
+var space;
+
+// Visual stuff
+var thin;
+var thick;
+var grid_grey;
+
+// Data
+var total_time;
+var total_length;
+var total_grid_w;
+var total_grid_h;
+
+var start_time;
+
+var h = total_grid_h + 2 * space;
+var time_mult = total_grid_w / total_time; // multiplier: px/min
+*/
+
+function init() {
+	w = canvas.width;
+	length_mult = 0.35; // multiplier: px/m
+
+	time_extra_factor = 0.9;
+
+	space = 10; // horizontal space left/right of grid
+
+	// Data
+	total_time = 60;
+	total_length = stops[stops.length-1].abs;
+
+	total_grid_w = w - 2 * space;
+	total_grid_h = length_mult * total_length;
+
+	start_time = stops[stops.length-1].departuretime;
+
+	h = total_grid_h + 2 * space;
+	time_mult = total_grid_w / total_time; // multiplier: px/min
+
+	// Visual
+	thin = 2;
+	thick = 3;
+	grid_grey = "#bbb";
+	grid_dark = "#767676";
+}
 
 // Clear the canvas and redraw it every 1000ms
 window.setInterval(function(){
-	date = new Date();
-	h = date.getHours();
-	m = date.getMinutes();
-	s = date.getSeconds();
-
-	context.clearRect(0, 0, canvas.width, canvas.height);
-
-	drawGrid(0, 24, 1, dist24, unimportant, thin);
-	drawGrid(0, 5, 6, dist24, important, thin);
-
-	drawGrid(1, 12, 1, dist12, unimportant, thin);
-	drawGrid(1, 5, 3, dist12, important, thin);
-
-	drawGrid(2, 12, 1, dist12, unimportant, thin);
-	drawGrid(2, 5, 3, dist12, important, thin);
-
-	drawTime(0, h, dist24, m/60 * dist24, accent, thick);
-	drawTime(1, m, dist60, s/60 * dist60, accent, thick);
-	drawTime(2, s, dist60, 0, accent, thick);
+	draw();
 }, 1000);
+
+function draw() {
+	init();
+	context.clearRect(0, 0, canvas.width, canvas.height);
+	drawTimeGrid();
+}
 
 // Drawing Functions
 
-function drawGrid(row, ticks, gap, dist, color, width) {
-	for (var i = 0; i < ticks; i++) {
+function drawTimeGrid() {
+	for (var i = 0; i < 8; i++) {
+		lg(i);
 		context.beginPath();
-		context.moveTo(leftd + i * gap * dist, topd + rowd * row);
-		context.lineTo(leftd + i * gap * dist, topd + len + rowd * row);
-		context.lineWidth = width;
-		context.strokeStyle = color;
+		context.moveTo(space + i * time_mult * 10, space);
+		context.lineTo(space + i * time_mult * 10, total_grid_h);
+		context.lineWidth = thin;
+		context.strokeStyle = grid_grey;
+		lg("gh:" + total_grid_h+ "   " + h)
 		context.stroke();
 	}
 }
 
-function drawTime(row, val, dist, disp, color, width) {
-	context.beginPath();
-	context.moveTo(leftd + val * dist + disp, topd + rowd * row);
-	context.lineTo(leftd + val * dist + disp, topd + len + rowd * row);
-	context.lineWidth = thick;
-	context.strokeStyle = color;
-	context.stroke();
+function drawStopGrid() {
+	stops.each(function(stop, i) {
+		lg(stop);
+		context.beginPath();
+		context.moveTo(space, space + stop.abs * length_mult);
+		context.lineTo(space + total_grid_w, space + stop.abs * length_mult);
+		context.lineWidth = thin;
+		context.strokeStyle = grid_dark;
+		context.stroke();
+	});
+}
 
-	context.font = "bold 18pt Helvetica";
-	context.fillStyle = color;
-	var offset = 14;
-	if (val < 10) {
-		offset = 6;
-	}
-	context.fillText(val, (leftd + val * dist + disp) - offset, 40 + rowd * row);
+function maxCanvas() {
+	console.log(window.innerWidth);
+	canvas.width = window.innerWidth;
+	canvas.height = h;
+	draw();
+}
+
+// EVENTS
+
+window.onload = function(){
+	init();
+	maxCanvas();
+};
+window.onresize = function(){
+	init();
+	maxCanvas();
+};
+
+
+// UTILS
+function lg(string) {
+	console.log(string);
 }
