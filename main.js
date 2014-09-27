@@ -4,6 +4,10 @@ var context = canvas.getContext("2d");
 // Name der Haltestelle, Entfernung vom Startpunkt in m
 var ratio = 1;
 var stops = undefined;
+var preStop = undefined;
+var preStopY = undefined;
+var actPreStop = undefined;
+var set = false;
 
 // Liste von Punkten des Diagramms
 // Timestamp, Entfernung vom Startpunkt in m
@@ -40,7 +44,7 @@ function init() {
   time_mult = total_grid_w / total_time; // multiplier: px/min
 
   // Visual
-  thin = 2;
+  thin = 1;
   thick = 3;
   grid_grey = "#bbb";
   grid_dark = "#555";
@@ -106,7 +110,11 @@ function drawStopGrid() {
 
     // stop names
     context.font = "400 9pt 'Fira Sans'";
-    context.fillStyle = "#000";
+    if (preStopY == top_space + stop.abs * length_mult) {
+      context.fillStyle = "red";
+    }
+    else
+      context.fillStyle = "#000";
     context.textAlign="right";
     context.fillText(fittingString(context, stop.name, text_width - space), text_width - space/2, top_space + stop.abs * length_mult);
   });
@@ -148,6 +156,13 @@ function drawRealBus() {
 			var arr_left =  (positions[i + 1].hour * 60 + positions[i + 1].min + positions[i + 1].sec / 60) * time_mult;
 			var arr_top = positions[i + 1].totalmeters * length_mult;
 
+      if (pos.lastbusstop == actPreStop && set) {
+        lg("ON");
+        set = false;
+        APIrequest("http://192.168.26.109/ajax/activate_lamps.php?activate=1");
+      }
+      if (pos.lastbusstop == actPreStop+1)
+        preStopY = undefined;
 			// horizontal grid lines
 			context.beginPath();
 			context.moveTo(left_offset + dep_left, top_offset + dep_top);
@@ -234,30 +249,20 @@ function APIrequest(url) {
  oReq.send();
  return oReq.responseText;
 }
-btn();
-
-function btn() {
-  var mouseX=0, mouseY=0;
-
-  canvas.addEventListener( "mousemove", function ( e ){
-
-    var scrollX = ( window.scrollX !== null && typeof window.scrollX !== 'undefined') ? window.scrollX : window.pageXOffset;
-
-    var scrollY = ( window.scrollY !== null && typeof window.scrollY !== 'undefined') ? window.scrollY : window.pageYOffset;
-
-    mouseX = e.clientX + scrollX;
-
-    mouseY = e.clientY + scrollY;
-
-  }, false );
 
   canvas.addEventListener( "click", function ( e ){
-
-    if( mouseX < 200 ){
-
-      window.location = "http://google.com";
-
+  if (e.clientX < text_width) {
+    stops.forEach(function(stop, i) {
+      var mouseYLimit = top_space + stop.abs * length_mult - 10;
+      if (mouseYLimit < e.clientY && i > 0) {
+        preStop = stop.name;
+        actPreStop = i-1;
+        preStopY = top_space + stop.abs * length_mult;
+        set = true;
+      }
+    });
+	      //init();
+	      //maxCanvas();
+        console.log(preStop + "    " + preStopY + "     " + actPreStop);
     }
-
   }, false );
-}
