@@ -165,7 +165,8 @@ function init() {
 
 	time_extra_factor = 0.9;
 
-	space = 10; // horizontal space left/right of grid
+	space = 15; // horizontal space left/right of grid
+	top_space = 40;
 	text_width = 100;
 	tick_length = 10;
 
@@ -176,16 +177,17 @@ function init() {
 	total_grid_w = w - 2 * space - text_width;
 	total_grid_h = length_mult * total_length;
 
-	start_time = stops[stops.length-1].departuretime;
+	start_min = stops[0].departuretime.min - (stops[0].departuretime.min) % 10;
+	start_hour = stops[0].departuretime.hour;
 
-	h = total_grid_h + 2 * space;
+	h = total_grid_h + 2 * top_space;
 	time_mult = total_grid_w / total_time; // multiplier: px/min
 
 	// Visual
 	thin = 2;
 	thick = 3;
 	grid_grey = "#bbb";
-	grid_dark = "#767676";
+	grid_dark = "#555";
 }
 
 // Clear the canvas and redraw it every 1000ms
@@ -204,12 +206,31 @@ function draw() {
 
 function drawTimeGrid() {
 	for (var i = 0; i < 8; i++) {
+		// long grey lines
 		context.beginPath();
-		context.moveTo(space + i * time_mult * 10 + text_width, space);
-		context.lineTo(space + i * time_mult * 10 + text_width, space + total_grid_h);
+		context.moveTo(space + i * time_mult * 10 + text_width, top_space);
+		context.lineTo(space + i * time_mult * 10 + text_width, top_space + total_grid_h);
 		context.lineWidth = thin;
-		context.strokeStyle = grid_grey;
+		context.strokeStyle = (i == 0 || i == 6)?grid_dark:grid_grey;
 		context.stroke();
+
+		// small black ticks
+		context.beginPath();
+		context.moveTo(space + i * time_mult * 10 + text_width, top_space - tick_length);
+		context.lineTo(space + i * time_mult * 10 + text_width, top_space);
+		context.lineWidth = thin;
+		context.strokeStyle = grid_dark;
+		context.stroke();
+
+		// time text
+		var mins = (i < 6)?(start_min + i * 10):0;
+		var hours = (i < 6)?start_hour:start_hour + 1;
+		var time_format = ((hours < 10)? "0" + hours : hours) + ":" + ((mins < 10)? "0" + mins : mins);
+
+		context.font = "500 8pt 'Fira Sans'";
+		context.fillStyle = "#000";
+		context.textAlign="right";
+		context.fillText(time_format, space + text_width + i * time_mult * 10 + 13, top_space - 20);
 	}
 }
 
@@ -218,8 +239,8 @@ function drawStopGrid() {
 
 		// horizontal grid lines
 		context.beginPath();
-		context.moveTo(space + text_width - tick_length, space + stop.abs * length_mult);
-		context.lineTo(space + total_grid_w + text_width, space + stop.abs * length_mult);
+		context.moveTo(space + text_width - tick_length, top_space + stop.abs * length_mult);
+		context.lineTo(space + total_grid_w + text_width, top_space + stop.abs * length_mult);
 		context.lineWidth = thin;
 		context.strokeStyle = grid_dark;
 		context.stroke();
@@ -227,7 +248,8 @@ function drawStopGrid() {
 		// stop names
 		context.font = "400 9pt 'Fira Sans'";
 		context.fillStyle = "#000";
-		context.fillText(fittingString(context, stop.name, text_width - space), space, space + stop.abs * length_mult);
+		context.textAlign="right";
+		context.fillText(fittingString(context, stop.name, text_width - space), text_width - space/2, top_space + stop.abs * length_mult);
 	});
 }
 
