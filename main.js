@@ -182,6 +182,8 @@ function init() {
 	start_min = stops[0].departuretime.min - (stops[0].departuretime.min) % 10;
 	start_hour = stops[0].departuretime.hour;
 
+	time_offset_graph = (stops[0].departuretime.min) % 10;
+
 	h = total_grid_h + 2 * top_space;
 	time_mult = total_grid_w / total_time; // multiplier: px/min
 
@@ -202,6 +204,7 @@ function draw() {
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	drawTimeGrid();
 	drawStopGrid();
+	drawBus();
 }
 
 // Drawing Functions
@@ -253,6 +256,52 @@ function drawStopGrid() {
 		context.fillStyle = "#000";
 		context.textAlign="right";
 		context.fillText(fittingString(context, stop.name, text_width - space), text_width - space/2, top_space + stop.abs * length_mult);
+	});
+}
+
+function drawBus() {
+	stops.forEach(function(stop, i) {
+		lg(stop);
+
+		var left_offset = space + text_width + time_offset_graph;
+		var top_offset = top_space;
+
+		if (i != 0) {
+			var dep = stops[i-1];
+			var arr = stop;
+
+			var dep_left = (dep.departuretime.hour * 60 + dep.departuretime.min) * time_mult;
+			var dep_top = dep.abs * length_mult;
+
+			var arr_left = (arr.arrivaltime.hour * 60 + arr.arrivaltime.min) * time_mult;
+			var arr_top = arr.abs * length_mult;
+
+			// horizontal grid lines
+			context.beginPath();
+			context.moveTo(left_offset + dep_left, top_space + dep_top);
+			context.lineTo(left_offset + arr_left, top_space + arr_top);
+			context.lineWidth = thick;
+			context.strokeStyle = "red";
+			context.stroke();
+		}
+		if (i != stops.length-1) {
+			var dep = stops[i-1];
+			var arr = stop;
+			lg(i-1);
+			var dep_left = (dep.arrivaltime.hour * 60 + dep.arrivaltime.min) * time_mult;
+			var dep_top = dep.abs * length_mult;
+
+			var arr_left = (arr.departuretime.hour * 60 + arr.departuretime.min) * time_mult;
+			var arr_top = dep.abs * length_mult;
+
+			// horizontal grid lines
+			context.beginPath();
+			context.moveTo(left_offset + dep_left, top_space + dep_top);
+			context.lineTo(left_offset + arr_left, top_space + arr_top);
+			context.lineWidth = thick;
+			context.strokeStyle = "red";
+			context.stroke();
+		}
 	});
 }
 
