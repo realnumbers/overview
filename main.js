@@ -321,7 +321,7 @@ function scale() {
     return ratio;
   }
 }
-APIrequest(:http://192.168.26.109/ajax/busstops.php");
+APIrequest("http://192.168.26.109/ajax/busstops.php");
 
 function APIrequest(url) {
  function reqListener () {
