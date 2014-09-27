@@ -257,16 +257,18 @@ function drawStopGrid() {
 }
 
 function drawBus() {
+	var left_offset = space + text_width - (stops[0].departuretime.hour * 60 + stops[0].departuretime.min) * time_mult;
+	var top_offset = top_space;
 	stops.forEach(function(stop, i) {
 		lg(stop);
 
-		var left_offset = space + text_width + time_offset_graph;
-		var top_offset = top_space;
 
-		if (i != 0) {
-			var dep = stops[i-1];
-			var arr = stop;
+		if (i < stops.length-1) {
+			var dep = stop;
+			var arr = stops[i+1];
 
+      
+      lg(i);
 			var dep_left = (dep.departuretime.hour * 60 + dep.departuretime.min) * time_mult;
 			var dep_top = dep.abs * length_mult;
 
@@ -275,13 +277,13 @@ function drawBus() {
 
 			// horizontal grid lines
 			context.beginPath();
-			context.moveTo(left_offset + dep_left, top_space + dep_top);
-			context.lineTo(left_offset + arr_left, top_space + arr_top);
+			context.moveTo(left_offset + dep_left, top_offset + dep_top);
+			context.lineTo(left_offset + arr_left, top_offset + arr_top);
 			context.lineWidth = thick;
 			context.strokeStyle = "red";
 			context.stroke();
 		}
-		if (i != stops.length-1) {
+	/*	if (i != stops.length-1) {
 			var dep = stops[i-1];
 			var arr = stop;
 			lg(i-1);
@@ -298,7 +300,7 @@ function drawBus() {
 			context.lineWidth = thick;
 			context.strokeStyle = "red";
 			context.stroke();
-		}
+		}*/
 	});
 }
 
