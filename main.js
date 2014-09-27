@@ -1,9 +1,8 @@
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
-
 // Haltestellen in Y Achse
 // Name der Haltestelle, Entfernung vom Startpunkt in m
-
+var ratio = 1;
 var stops = [
 
 		{
@@ -160,9 +159,8 @@ var time_mult = total_grid_w / total_time; // multiplier: px/min
 */
 
 function init() {
-	//alert(window.devicePixelRatio);
 	// Constants
-	w = canvas.width;
+	w =  canvas.width / ratio;
 	length_mult = 0.03; // multiplier: px/m
 
 	time_extra_factor = 0.9;
@@ -241,7 +239,6 @@ function drawTimeGrid() {
 
 function drawStopGrid() {
 	stops.forEach(function(stop, i) {
-		lg(stop);
 
 		// horizontal grid lines
 		context.beginPath();
@@ -309,6 +306,7 @@ function maxCanvas() {
 	console.log(window.innerWidth);
 	canvas.width = window.innerWidth;
 	canvas.height = h;
+  scale();
 	draw();
 }
 
@@ -343,4 +341,44 @@ function fittingString(c, str, maxWidth) {
 		}
 	return str+ellipsis;
 	}
+}
+function scale() {
+  var devicePixelRatio = window.devicePixelRatio || 1;
+  var backingStoreRatio = context.webkitBackingStorePixelRatio ||
+    context.mozBackingStorePixelRatio ||
+    context.msBackingStorePixelRatio ||
+    context.oBackingStorePixelRatio ||
+    context.backingStorePixelRatio || 1;
+
+  ratio = devicePixelRatio / backingStoreRatio;
+
+  // upscale the canvas if the two ratios don't match
+  if (devicePixelRatio !== backingStoreRatio) {
+    var oldWidth = canvas.width;
+    var oldHeight = canvas.height;
+
+    canvas.width = oldWidth * ratio;
+    canvas.height = oldHeight * ratio;
+
+    canvas.style.width = oldWidth + 'px';
+    canvas.style.height = oldHeight + 'px';
+
+    // now scale the context to counter
+    // the fact that we've manually scaled
+    // our canvas element
+    context.scale(ratio, ratio);
+    return ratio;
+  }
+}
+APIrequest("http://192.168.26.109/ajax/busstops.php");
+
+function APIrequest(url) {
+ function reqListener () {
+     console.log(this.responseText);
+ }
+
+ var oReq = new XMLHttpRequest();
+ oReq.onload = reqListener;
+ oReq.open("get", url, true);
+ oReq.send();
 }
