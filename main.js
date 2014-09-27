@@ -3,160 +3,15 @@ var context = canvas.getContext("2d");
 // Haltestellen in Y Achse
 // Name der Haltestelle, Entfernung vom Startpunkt in m
 var ratio = 1;
-var stops = [
-
-		{
-				"name": "piazza domenicani - Domenikanerplatz",
-				"arrivaltime": null,
-				"departuretime": {
-						"hour": 17,
-						"min": 0
-				},
-				"diff": "0",
-				"abs": "0"
-		},
-		{
-				"name": "EURAC",
-				"arrivaltime": {
-						"hour": 17,
-						"min": 2
-				},
-				"departuretime": {
-						"hour": 17,
-						"min": 2
-				},
-				"diff": "1000",
-				"abs": "1000"
-		},
-		{
-				"name": "TIS",
-				"arrivaltime": {
-						"hour": 17,
-						"min": 9
-				},
-				"departuretime": {
-						"hour": 17,
-						"min": 9
-				},
-				"diff": "2500",
-				"abs": "3500"
-		},
-		{
-				"name": "SEL Ecotherm",
-				"arrivaltime": {
-						"hour": 17,
-						"min": 13
-				},
-				"departuretime": {
-						"hour": 17,
-						"min": 13
-				},
-				"diff": "3000",
-				"abs": "6500"
-		},
-		{
-				"name": "SALEWA",
-				"arrivaltime": {
-						"hour": 17,
-						"min": 20
-				},
-				"departuretime": {
-						"hour": 17,
-						"min": 20
-				},
-				"diff": "1000",
-				"abs": "7500"
-		},
-		{
-				"name": "IIT",
-				"arrivaltime": {
-						"hour": 17,
-						"min": 23
-				},
-				"departuretime": {
-						"hour": 23,
-						"min": 23
-				},
-				"diff": "2200",
-				"abs": "9700"
-		},
-		{
-				"name": "TIS",
-				"arrivaltime": {
-						"hour": 17,
-						"min": 27
-				},
-				"departuretime": {
-						"hour": 17,
-						"min": 27
-				},
-				"diff": "3000",
-				"abs": "12700"
-		},
-		{
-				"name": "EURAC",
-				"arrivaltime": {
-						"hour": 17,
-						"min": 35
-				},
-				"departuretime": {
-						"hour": 17,
-						"min": 35
-				},
-				"diff": "2700",
-				"abs": "15400"
-		},
-		{
-				"name": "piazza Domenicani",
-				"arrivaltime": {
-						"hour": 17,
-						"min": 38
-				},
-				"departuretime": null,
-				"diff": "1200",
-				"abs": "16600"
-		}
-
-];
+var stops = undefined;
 
 // Liste von Punkten des Diagramms
 // Timestamp, Entfernung vom Startpunkt in m
-var points = [
-	[[14,26,00],13],
-	[[14,26,01],22],
-	[[14,26,03],31],
-	[[14,26,04],44],
-	[[14,26,05],52]
-]
-/*
-// Constants
-var w;
-var h;
+var positions = undefined;
 
-var length_mult;
-var time_mult;
 
-var time_extra_factor;
-
-var space;
-
-// Visual stuff
-var thin;
-var thick;
-var grid_grey;
-
-// Data
-var total_time;
-var total_length;
-var total_grid_w;
-var total_grid_h;
-
-var start_time;
-
-var h = total_grid_h + 2 * space;
-var time_mult = total_grid_w / total_time; // multiplier: px/min
-*/
-
+stops = JSON.parse(APIrequest("http://192.168.26.109/ajax/busstops.php?jsonp=callback").split("callback(")[1].split(")")[0]);
+positions = JSON.parse(APIrequest("http://192.168.26.109/ajax/position.php?jsonp=callback").split("callback(")[1].split(")")[0]);
 function init() {
   // Constants
   w =  canvas.width / ratio;
@@ -198,6 +53,7 @@ window.setInterval(function(){
 
 function draw() {
   init();
+  positions = JSON.parse(APIrequest("http://192.168.26.109/ajax/position.php?jsonp=callback").split("callback(")[1].split(")")[0]);
   context.clearRect(0, 0, canvas.width, canvas.height);
   drawTimeGrid();
   drawStopGrid();
@@ -279,24 +135,6 @@ function drawBus() {
 			context.strokeStyle = "#000";
 			context.stroke();
 		}
-	/*	if (i != stops.length-1) {
-			var dep = stops[i-1];
-			var arr = stop;
-			lg(i-1);
-			var dep_left = (dep.arrivaltime.hour * 60 + dep.arrivaltime.min) * time_mult;
-			var dep_top = dep.abs * length_mult;
-
-			var arr_left = (arr.departuretime.hour * 60 + arr.departuretime.min) * time_mult;
-			var arr_top = dep.abs * length_mult;
-
-			// horizontal grid lines
-			context.beginPath();
-			context.moveTo(left_offset + dep_left, top_space + dep_top);
-			context.lineTo(left_offset + arr_left, top_space + arr_top);
-			context.lineWidth = thick;
-			context.strokeStyle = "red";
-			context.stroke();
-		}*/
 	});
 }
 
@@ -304,13 +142,9 @@ function drawRealBus() {
 	var left_offset = space + text_width - (positions[0].hour * 60 + positions[0].min + positions[0].sec / 60) * time_mult;
 	var top_offset = top_space;
 	positions.forEach(function(pos, i) {
-		lg(positions);
-		if (i > 0 && i < positions.length - 1) {
-      
-      lg("i:" +i);
+		if (positions.length > 0 && i < positions.length - 1) {
 			var dep_left =  (positions[i].hour * 60 + positions[i].min + positions[i].sec / 60) * time_mult;
 			var dep_top = positions[i].totalmeters * length_mult;
-
 			var arr_left =  (positions[i + 1].hour * 60 + positions[i + 1].min + positions[i + 1].sec / 60) * time_mult;
 			var arr_top = positions[i + 1].totalmeters * length_mult;
 
@@ -393,15 +227,37 @@ function scale() {
     return ratio;
   }
 }
-APIrequest("http://192.168.26.109/ajax/busstops.php");
 
 function APIrequest(url) {
- function reqListener () {
-     console.log(this.responseText);
- }
-
  var oReq = new XMLHttpRequest();
- oReq.onload = reqListener;
- oReq.open("get", url, true);
+ oReq.open("get", url, false);
  oReq.send();
+ return oReq.responseText;
+}
+btn();
+
+function btn() {
+  var mouseX=0, mouseY=0;
+
+  canvas.addEventListener( "mousemove", function ( e ){
+
+    var scrollX = ( window.scrollX !== null && typeof window.scrollX !== 'undefined') ? window.scrollX : window.pageXOffset;
+
+    var scrollY = ( window.scrollY !== null && typeof window.scrollY !== 'undefined') ? window.scrollY : window.pageYOffset;
+
+    mouseX = e.clientX + scrollX;
+
+    mouseY = e.clientY + scrollY;
+
+  }, false );
+
+  canvas.addEventListener( "click", function ( e ){
+
+    if( mouseX < 200 ){
+
+      window.location = "http://google.com";
+
+    }
+
+  }, false );
 }
