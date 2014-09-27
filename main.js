@@ -128,7 +128,6 @@ var points = [
 	[[14,26,04],44],
 	[[14,26,05],52]
 ]
-
 /*
 // Constants
 var w;
@@ -159,128 +158,125 @@ var time_mult = total_grid_w / total_time; // multiplier: px/min
 */
 
 function init() {
-	// Constants
-	w =  canvas.width / ratio;
-	length_mult = 0.03; // multiplier: px/m
+  // Constants
+  w =  canvas.width / ratio;
+  length_mult = 0.03; // multiplier: px/m
 
-	time_extra_factor = 0.9;
+  time_extra_factor = 0.9;
 
-	space = 15; // horizontal space left/right of grid
-	top_space = 40;
-	text_width = 100;
-	tick_length = 10;
+  space = 15; // horizontal space left/right of grid
+  top_space = 40;
+  text_width = 100;
+  tick_length = 10;
 
-	// Data
-	total_time = 60;
-	total_length = stops[stops.length-1].abs;
+  // Data
+  total_time = 60;
+  total_length = stops[stops.length-1].abs;
 
-	total_grid_w = w - 2 * space - text_width;
-	total_grid_h = length_mult * total_length;
+  total_grid_w = w - 2 * space - text_width;
+  total_grid_h = length_mult * total_length;
 
-	start_min = stops[0].departuretime.min - (stops[0].departuretime.min) % 10;
-	start_hour = stops[0].departuretime.hour;
+  start_min = stops[0].departuretime.min - (stops[0].departuretime.min) % 10;
+  start_hour = stops[0].departuretime.hour;
 
-	time_offset_graph = (stops[0].departuretime.min) % 10;
+  time_offset_graph = (stops[0].departuretime.min) % 10;
 
-	h = total_grid_h + 2 * top_space;
-	time_mult = total_grid_w / total_time; // multiplier: px/min
+  h = total_grid_h + 2 * top_space;
+  time_mult = total_grid_w / total_time; // multiplier: px/min
 
-	// Visual
-	thin = 2;
-	thick = 3;
-	grid_grey = "#bbb";
-	grid_dark = "#555";
+  // Visual
+  thin = 2;
+  thick = 3;
+  grid_grey = "#bbb";
+  grid_dark = "#555";
 }
 
 // Clear the canvas and redraw it every 1000ms
 window.setInterval(function(){
-	draw();
+  draw();
 }, 1000);
 
 function draw() {
-	init();
-	context.clearRect(0, 0, canvas.width, canvas.height);
-	drawTimeGrid();
-	drawStopGrid();
-	drawBus();
+  init();
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  drawTimeGrid();
+  drawStopGrid();
+  drawBus();
+  drawRealBus();
 }
 
 // Drawing Functions
 
 function drawTimeGrid() {
-	for (var i = 0; i < 8; i++) {
-		// long grey lines
-		context.beginPath();
-		context.moveTo(space + i * time_mult * 10 + text_width, top_space);
-		context.lineTo(space + i * time_mult * 10 + text_width, top_space + total_grid_h);
-		context.lineWidth = thin;
-		context.strokeStyle = (i == 0 || i == 6)?grid_dark:grid_grey;
-		context.stroke();
+  for (var i = 0; i < 8; i++) {
+    // long grey lines
+    context.beginPath();
+    context.moveTo(space + i * time_mult * 10 + text_width, top_space);
+    context.lineTo(space + i * time_mult * 10 + text_width, top_space + total_grid_h);
+    context.lineWidth = thin;
+    context.strokeStyle = (i == 0 || i == 6)?grid_dark:grid_grey;
+    context.stroke();
 
-		// small black ticks
-		context.beginPath();
-		context.moveTo(space + i * time_mult * 10 + text_width, top_space - tick_length);
-		context.lineTo(space + i * time_mult * 10 + text_width, top_space);
-		context.lineWidth = thin;
-		context.strokeStyle = grid_dark;
-		context.stroke();
+    // small black ticks
+    context.beginPath();
+    context.moveTo(space + i * time_mult * 10 + text_width, top_space - tick_length);
+    context.lineTo(space + i * time_mult * 10 + text_width, top_space);
+    context.lineWidth = thin;
+    context.strokeStyle = grid_dark;
+    context.stroke();
 
-		// time text
-		var mins = (i < 6)?(start_min + i * 10):0;
-		var hours = (i < 6)?start_hour:start_hour + 1;
-		var time_format = ((hours < 10)? "0" + hours : hours) + ":" + ((mins < 10)? "0" + mins : mins);
+    // time text
+    var mins = (i < 6)?(start_min + i * 10):0;
+    var hours = (i < 6)?start_hour:start_hour + 1;
+    var time_format = ((hours < 10)? "0" + hours : hours) + ":" + ((mins < 10)? "0" + mins : mins);
 
-		context.font = "500 8pt 'Fira Sans'";
-		context.fillStyle = "#000";
-		context.textAlign="right";
-		context.fillText(time_format, space + text_width + i * time_mult * 10 + 13, top_space - 20);
-	}
+    context.font = "500 8pt 'Fira Sans'";
+    context.fillStyle = "#000";
+    context.textAlign="right";
+    context.fillText(time_format, space + text_width + i * time_mult * 10 + 13, top_space - 20);
+  }
 }
 
 function drawStopGrid() {
-	stops.forEach(function(stop, i) {
+  stops.forEach(function(stop, i) {
 
-		// horizontal grid lines
-		context.beginPath();
-		context.moveTo(space + text_width - tick_length, top_space + stop.abs * length_mult);
-		context.lineTo(space + total_grid_w + text_width, top_space + stop.abs * length_mult);
-		context.lineWidth = thin;
-		context.strokeStyle = grid_dark;
-		context.stroke();
+    // horizontal grid lines
+    context.beginPath();
+    context.moveTo(space + text_width - tick_length, top_space + stop.abs * length_mult);
+    context.lineTo(space + total_grid_w + text_width, top_space + stop.abs * length_mult);
+    context.lineWidth = thin;
+    context.strokeStyle = grid_dark;
+    context.stroke();
 
-		// stop names
-		context.font = "400 9pt 'Fira Sans'";
-		context.fillStyle = "#000";
-		context.textAlign="right";
-		context.fillText(fittingString(context, stop.name, text_width - space), text_width - space/2, top_space + stop.abs * length_mult);
-	});
+    // stop names
+    context.font = "400 9pt 'Fira Sans'";
+    context.fillStyle = "#000";
+    context.textAlign="right";
+    context.fillText(fittingString(context, stop.name, text_width - space), text_width - space/2, top_space + stop.abs * length_mult);
+  });
 }
 
 function drawBus() {
-	var left_offset = space + text_width - (stops[0].departuretime.hour * 60 + stops[0].departuretime.min) * time_mult;
-	var top_offset = top_space;
-	stops.forEach(function(stop, i) {
-		lg(stop);
+  var left_offset = space + text_width - (stops[0].departuretime.hour * 60 + stops[0].departuretime.min) * time_mult;
+  var top_offset = top_space;
+  stops.forEach(function(stop, i) {
 
+    if (i < stops.length-1) {
+      var dep = stop;
+      var arr = stops[i+1];
 
-		if (i < stops.length-1) {
-			var dep = stop;
-			var arr = stops[i+1];
+      var dep_left = (dep.departuretime.hour * 60 + dep.departuretime.min) * time_mult;
+      var dep_top = dep.abs * length_mult;
 
-      
-      lg(i);
-			var dep_left = (dep.departuretime.hour * 60 + dep.departuretime.min) * time_mult;
-			var dep_top = dep.abs * length_mult;
-
-			var arr_left = (arr.arrivaltime.hour * 60 + arr.arrivaltime.min) * time_mult;
-			var arr_top = arr.abs * length_mult;
+      var arr_left = (arr.arrivaltime.hour * 60 + arr.arrivaltime.min) * time_mult;
+      var arr_top = arr.abs * length_mult;
 
 			// horizontal grid lines
 			context.beginPath();
 			context.moveTo(left_offset + dep_left, top_offset + dep_top);
 			context.lineTo(left_offset + arr_left, top_offset + arr_top);
-			context.lineWidth = thick;
-			context.strokeStyle = "red";
+			context.lineWidth = thin;
+			context.strokeStyle = "#000";
 			context.stroke();
 		}
 	/*	if (i != stops.length-1) {
@@ -301,6 +297,31 @@ function drawBus() {
 			context.strokeStyle = "red";
 			context.stroke();
 		}*/
+	});
+}
+
+function drawRealBus() {
+	var left_offset = space + text_width - (positions[0].hour * 60 + positions[0].min + positions[0].sec / 60) * time_mult;
+	var top_offset = top_space;
+	positions.forEach(function(pos, i) {
+		lg(positions);
+		if (i > 0 && i < positions.length - 1) {
+      
+      lg("i:" +i);
+			var dep_left =  (positions[i].hour * 60 + positions[i].min + positions[i].sec / 60) * time_mult;
+			var dep_top = positions[i].totalmeters * length_mult;
+
+			var arr_left =  (positions[i + 1].hour * 60 + positions[i + 1].min + positions[i + 1].sec / 60) * time_mult;
+			var arr_top = positions[i + 1].totalmeters * length_mult;
+
+			// horizontal grid lines
+			context.beginPath();
+			context.moveTo(left_offset + dep_left, top_offset + dep_top);
+			context.lineTo(left_offset + arr_left, top_offset + arr_top);
+			context.lineWidth = thick;
+			context.strokeStyle = "red";
+			context.stroke();
+		}
 	});
 }
 
